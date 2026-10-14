@@ -1,0 +1,75 @@
+{
+  "manifest_version": 3,
+  "name": "拼多多拟人下单助手",
+  "version": "0.1.0",
+  "description": "按预设商品/规格/数量在拼多多下单，并定时轮询发货状态。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "拼多多下单助手",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.yangkeduo.com/*",
+    "*://*.pinduoduo.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://mobile.yangkeduo.com/goods*",
+        "*://mobile.yangkeduo.com/goods.html*",
+        "*://mobile.yangkeduo.com/goods2.html*",
+        "*://mobile.yangkeduo.com/order_checkout.html*",
+        "*://mobile.yangkeduo.com/pay.html*"
+      ],
+      "js": [
+        "content/page-helper.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "*://mobile.yangkeduo.com/goods*",
+        "*://mobile.yangkeduo.com/goods.html*",
+        "*://mobile.yangkeduo.com/goods2.html*",
+        "*://mobile.yangkeduo.com/order_checkout.html*",
+        "*://mobile.yangkeduo.com/pay.html*"
+      ],
+      "js": [
+        "content/human-like.js",
+        "content/order-flow.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://mobile.yangkeduo.com/orders.html*"
+      ],
+      "js": [
+        "content/order-check.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

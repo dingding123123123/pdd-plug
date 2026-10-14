@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>拼多多下单助手</h1>
+    <button id="openOptions" class="link">设置</button>
+  </header>
+
+  <section class="section">
+    <div class="row" style="justify-content:space-between;">
+      <h2 style="margin:0;">商品</h2>
+      <div>
+        <button id="selectAll" class="link">全选</button>
+        <button id="batchOrder" class="btn-primary" disabled>批量下单 (0)</button>
+      </div>
+    </div>
+    <div id="batchStatus" class="muted hidden" style="margin:4px 0;"></div>
+    <div id="productList" class="list"></div>
+    <div id="noProducts" class="empty hidden">还没有预设商品，去设置里加几个吧。</div>
+  </section>
+
+  <section class="section">
+    <h2>订单</h2>
+    <div class="row">
+      <button id="checkNow" class="btn-secondary">立即检查发货</button>
+      <span id="checkInfo" class="muted"></span>
+    </div>
+    <div id="orderList" class="list"></div>
+    <div id="noOrders" class="empty hidden">暂无订单</div>
+  </section>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

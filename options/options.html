@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>拼多多下单助手 - 设置</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>设置</h1>
+
+    <section>
+      <h2>预设商品</h2>
+      <p class="hint">粘贴拼多多商品链接（推荐 mobile.yangkeduo.com/goods*）。规格关键词支持用空格或逗号分隔，比如：黑色 XL。</p>
+      <table id="productsTable">
+        <thead>
+          <tr>
+            <th>备注名</th>
+            <th>商品链接</th>
+            <th>规格关键词</th>
+            <th>数量</th>
+            <th>地址关键词</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="hint">地址关键词：用于在结算页切换收货地址，填收件人名字、小区名、城市、"家""公司"等能唯一区分的词。留空用默认地址。</p>
+      <button id="addProduct" class="btn-secondary">+ 添加商品</button>
+    </section>
+
+    <section>
+      <h2>批量下单</h2>
+      <div class="field">
+        <label>两次下单之间的冷却时间（秒）
+          <input type="number" id="batchDelaySec" min="2" step="1" value="8">
+        </label>
+      </div>
+      <p class="hint">批量下单时每个商品走完到支付页后，等待 N 秒再开下一个（避开风控）。</p>
+    </section>
+
+    <section>
+      <h2>发货轮询</h2>
+      <div class="field">
+        <label>
+          <input type="checkbox" id="shippingEnabled">
+          启用后台定时检查发货
+        </label>
+      </div>
+      <div class="field">
+        <label>检查间隔（分钟）
+          <input type="number" id="shippingInterval" min="10" step="10" value="120">
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>拟人化参数</h2>
+      <div class="field">
+        <label>操作间最小等待（毫秒）
+          <input type="number" id="delayMin" min="0" step="100" value="400">
+        </label>
+      </div>
+      <div class="field">
+        <label>操作间最大等待（毫秒）
+          <input type="number" id="delayMax" min="0" step="100" value="1500">
+        </label>
+      </div>
+      <div class="field">
+        <label>等待元素超时（毫秒）
+          <input type="number" id="pageWaitTimeout" min="2000" step="1000" value="15000">
+        </label>
+      </div>
+      <div class="field">
+        <label>
+          <input type="checkbox" id="stopBeforePay" checked>
+          到达支付页就停下（推荐，手动确认支付更安全）
+        </label>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="save" class="btn-primary">保存</button>
+      <span id="saveStatus" class="status"></span>
+    </div>
+  </div>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
