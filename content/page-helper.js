@@ -3,6 +3,24 @@
 // 隔离世界的 order-flow.js 通过 window CustomEvent 向它发指令
 
 (function () {
+  // ========== 伪装成 iPhone 真机环境（在 PDD 任何 JS 执行前覆盖） ==========
+  // 必须 document_start 阶段执行，否则 PDD 的 JS 已经读走原 UA 了
+  const FAKE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+  try {
+    Object.defineProperty(navigator, 'userAgent', { get: () => FAKE_UA, configurable: true });
+    Object.defineProperty(navigator, 'appVersion', { get: () => '5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15', configurable: true });
+    Object.defineProperty(navigator, 'platform', { get: () => 'iPhone', configurable: true });
+    Object.defineProperty(navigator, 'vendor', { get: () => 'Apple Computer, Inc.', configurable: true });
+    Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5, configurable: true });
+    // 让 'ontouchstart' in window 为 true（PDD 判断移动端常用）
+    if (!('ontouchstart' in window)) {
+      window.ontouchstart = null;
+    }
+  } catch (e) {
+    console.warn('[PDD-main] UA 伪装失败:', e);
+  }
+  console.log('[PDD-main] UA 伪装为 iPhone 已装载');
+
   if (window.__pddPageHelper) return;
   window.__pddPageHelper = true;
 

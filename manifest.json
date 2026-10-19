@@ -27,11 +27,26 @@
     "alarms",
     "notifications",
     "tabs",
-    "scripting"
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "pdd_ua_rules",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "host_permissions": [
     "*://*.yangkeduo.com/*",
-    "*://*.pinduoduo.com/*"
+    "*://*.pinduoduo.com/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
+    "https://erp-test.atlasdbs.com/*",
+    "https://erp.atlasdbs.com/*"
   ],
   "content_scripts": [
     {
@@ -70,6 +85,18 @@
         "content/order-check.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "http://127.0.0.1:3000/*",
+        "https://erp-test.atlasdbs.com/*",
+        "https://erp.atlasdbs.com/*"
+      ],
+      "js": [
+        "content/erp-bridge.js"
+      ],
+      "run_at": "document_start"
     }
   ]
 }

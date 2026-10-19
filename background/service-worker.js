@@ -53,12 +53,53 @@ async function setPendingTask(task) {
   }
 }
 
+async function getPendingTask() {
+  try {
+    const r = await chrome.storage.session.get('pendingTask');
+    if (r.pendingTask) return r.pendingTask;
+  } catch (_) {}
+  const r = await chrome.storage.local.get('pendingTask');
+  return r.pendingTask || null;
+}
+
 async function placeOrder(product) {
   console.log('[PDD SW] placeOrder:', product);
   if (!product?.url) throw new Error('商品链接为空');
   await setPendingTask({ type: 'placeOrder', product, startedAt: Date.now() });
   const tab = await chrome.tabs.create({ url: product.url, active: true });
   console.log('[PDD SW] opened tab:', tab.id, tab.url);
+  return tab.id;
+}
+
+// ---------- ERP 对接 ----------
+
+async function sendToErpTab(erpTabId, payload) {
+  if (!erpTabId) return;
+  try {
+    await chrome.tabs.sendMessage(erpTabId, { target: 'erp-bridge', ...payload });
+  } catch (e) {
+    console.warn('[PDD SW] 回传 ERP tab 失败:', e?.message || e);
+  }
+}
+
+async function placeOrderFromErp(requestId, payload, erpTabId) {
+  if (!payload?.goodsUrl) throw new Error('商品链接为空');
+  const product = {
+    url: payload.goodsUrl,
+    title: payload.title || '',
+    spec: payload.spec || '',
+    quantity: payload.quantity || 1,
+    addressKey: payload.addressKey || '',
+    erpContext: {
+      requestId,
+      erpTabId,
+      erpPlanId: payload.erpPlanId,
+    },
+  };
+  await sendToErpTab(erpTabId, { type: 'erpOrderProgress', requestId, status: 'queued' });
+  await setPendingTask({ type: 'placeOrder', product, startedAt: Date.now() });
+  const tab = await chrome.tabs.create({ url: product.url, active: true });
+  await sendToErpTab(erpTabId, { type: 'erpOrderProgress', requestId, status: 'navigating' });
   return tab.id;
 }
 
@@ -222,12 +263,42 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             lastCheckedAt: null,
             shippedAt: null
           });
+          // ERP 发起的任务：回传给 ERP tab
+          const task = await getPendingTask();
+          const ctx = task?.product?.erpContext;
+          if (ctx?.requestId && ctx?.erpTabId) {
+            await sendToErpTab(ctx.erpTabId, {
+              type: 'erpOrderDone',
+              requestId: ctx.requestId,
+              status: 'awaiting_payment',
+              pddOrderNo: msg.orderId,
+            });
+          }
           sendResponse({ ok: true });
           break;
         }
         case 'orderError': {
           notify(`下单失败: ${msg.reason || '未知错误'}`);
+          const task = await getPendingTask();
+          const ctx = task?.product?.erpContext;
+          if (ctx?.requestId && ctx?.erpTabId) {
+            await sendToErpTab(ctx.erpTabId, {
+              type: 'erpOrderFailed',
+              requestId: ctx.requestId,
+              reason: msg.reason || '下单失败',
+            });
+          }
           sendResponse({ ok: true });
+          break;
+        }
+        case 'erpPlaceOrder': {
+          const erpTabId = sender?.tab?.id;
+          try {
+            const tabId = await placeOrderFromErp(msg.requestId, msg.payload || {}, erpTabId);
+            sendResponse({ ok: true, tabId });
+          } catch (err) {
+            sendResponse({ ok: false, error: String(err?.message || err) });
+          }
           break;
         }
         case 'shippingCheckResult': {
